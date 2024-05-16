@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  role      Role     @default(User)
+  isActive  Boolean  @default(false)
+}
+
+model Location {
+  id       String        @id @default(cuid())
+  name     String
+  tanks    Tank[]
+  location TankHistory[]
+}
+
+model Tank {
+  id             String        @id @default(cuid())
+  currentStatus  TankStatus
+  code           String
+  locationId     String
+  location       Location      @relation(fields: [locationId], references: [id])
+  historyEntries TankHistory[]
+}
+
+model TankHistory {
+  id             String     @id @default(cuid())
+  tankId         String
+  status         TankStatus
+  eventTimestamp DateTime   @default(now())
+  locationId     String
+  location       Location   @relation(fields: [locationId], references: [id])
+  tank           Tank       @relation(fields: [tankId], references: [id])
+}
+
+enum Role {
+  User
+  Admin
+}
+
+enum TankStatus {
+  IN_SERVICE
+  EMPTY_AT_OXYGEN_CENTER
+  DELIVERED_AT_OXYGEN_CENTER
+}
